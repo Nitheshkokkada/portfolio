@@ -88,10 +88,11 @@ const TileCard = ({
     whileHover={{ scale: 1.05, y: -5 }}
     whileTap={{ scale: 0.95 }}
     onClick={onClick}
-    className={`relative w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-full flex flex-col items-center justify-center text-center transition-all hover:shadow-[0_15px_40px_rgba(0,0,0,0.12)] overflow-hidden group ${color} shadow-lg shrink-0`}
+    className={`relative w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-full flex flex-col items-center justify-center text-center overflow-hidden group ${color} shadow-lg shrink-0`}
+    style={{ willChange: 'transform' }}
   >
     <div className="z-10 flex flex-col items-center">
-      <div className="bg-white/20 p-2 sm:p-3.5 rounded-full mb-1 sm:mb-2 backdrop-blur-md group-hover:bg-white/30 transition-colors">
+      <div className="bg-white/20 p-2 sm:p-3.5 rounded-full mb-1 sm:mb-2 backdrop-blur-md group-hover:bg-white/30 transition-colors duration-300">
         <Icon className="w-4 h-4 sm:w-7 sm:h-7 text-white" />
       </div>
       <h3 className="text-[8px] sm:text-[10px] lg:text-xs font-black text-white uppercase tracking-[0.2em] sm:tracking-[0.25em]">{title}</h3>
@@ -102,10 +103,12 @@ const TileCard = ({
 
 const SectionWrapper = ({ children, onBack, title }: { children: React.ReactNode; onBack: () => void; title?: string }) => (
   <motion.div
-    initial={{ opacity: 0, y: 20 }}
+    initial={{ opacity: 0, y: 15 }}
     animate={{ opacity: 1, y: 0 }}
-    exit={{ opacity: 0, y: -20 }}
+    exit={{ opacity: 0, y: -15 }}
+    transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
     className="min-h-screen pt-24 pb-12 px-6 max-w-5xl mx-auto"
+    style={{ willChange: 'transform, opacity' }}
   >
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-12">
       <button 
@@ -127,7 +130,154 @@ const SectionWrapper = ({ children, onBack, title }: { children: React.ReactNode
   </motion.div>
 );
 
+const BackgroundAnimation = React.memo(({ isDarkMode }: { isDarkMode: boolean }) => {
+  const particles = React.useMemo(() => {
+    return [...Array(40)].map((_, i) => ({
+      id: i,
+      x: `${Math.random() * 100}%`,
+      yStart: 40 + Math.random() * 60,
+      yEnd1: 42 + Math.random() * 58,
+      yEnd2: 40 + Math.random() * 60,
+      opacity: Math.random() * 0.7,
+      scale: Math.random() * 1.5,
+      duration: 4 + Math.random() * 8,
+      delay: Math.random() * 10,
+      isLarge: i % 10 === 0
+    }));
+  }, []);
+
+  return (
+    <div className={`fixed inset-0 z-0 overflow-hidden pointer-events-none transition-opacity duration-1000 ${isDarkMode ? 'opacity-100' : 'opacity-20'}`} 
+         style={{ background: isDarkMode ? 'radial-gradient(circle at 50% 30%, #0c1e35 0%, #020617 100%)' : 'radial-gradient(circle at 50% 50%, #f8fafc 0%, #e2e8f0 100%)' }}>
+      
+      {/* SVG Waves Container with Perspective */}
+      <div className="absolute inset-0 w-full h-full opacity-60" style={{ willChange: 'transform' }}>
+        <svg className="w-full h-full" viewBox="0 0 1440 800" preserveAspectRatio="none" style={{ display: 'block', minWidth: '100vw' }}>
+          {[...Array(12)].map((_, i) => {
+            const progress = i / 12;
+            const baseY = 400 + Math.pow(progress, 1.5) * 400; 
+            const amplitude = 20 + Math.pow(progress, 2) * 120; 
+            const strokeWidth = 0.5 + progress * 2.5;
+            const opacityValue = 0.05 + (1 - progress) * 0.4;
+            
+            const segments = 6;
+            const segmentWidth = 1440 / segments;
+            
+            const generatePath = (ampMult: number) => {
+              let d = `M-300,${baseY}`;
+              for (let j = 0; j < segments; j++) {
+                const x1 = j * segmentWidth + segmentWidth / 3;
+                const x2 = j * segmentWidth + (segmentWidth * 2) / 3;
+                const x3 = (j + 1) * segmentWidth;
+                const y1 = baseY + (j % 2 === 0 ? -amplitude * ampMult : amplitude * ampMult);
+                const y2 = baseY + (j % 2 === 0 ? -amplitude * ampMult : amplitude * ampMult);
+                d += ` C${x1},${y1} ${x2},${y2} ${x3},${baseY}`;
+              }
+              d += ` L1740,${baseY}`;
+              return d;
+            };
+            
+            return (
+              <motion.path
+                key={`wave-${i}`}
+                initial={{ d: generatePath(1), opacity: 0 }}
+                animate={{
+                  d: [
+                    generatePath(1),
+                    generatePath(-1),
+                    generatePath(1)
+                  ],
+                  opacity: opacityValue
+                }}
+                transition={{
+                  d: {
+                    duration: 15 + (i % 6) * 5,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: i * 0.3
+                  },
+                  opacity: {
+                    duration: 2,
+                    delay: i * 0.1
+                  }
+                }}
+                fill="none"
+                stroke={isDarkMode ? (i % 3 === 0 ? "#22d3ee" : i % 3 === 1 ? "#3b82f6" : "#1e40af") : "#6366f1"}
+                strokeWidth={strokeWidth}
+                strokeOpacity={opacityValue}
+                style={{ willChange: 'd' }}
+              />
+            );
+          })}
+        </svg>
+      </div>
+
+      {/* Glowing Particles (Dust & Nodes) */}
+      {particles.map((p) => (
+        <motion.div
+          key={`node-${p.id}`}
+          initial={{ 
+            x: p.x, 
+            y: `${p.yStart}%`,
+            opacity: 0 
+          }}
+          animate={{ 
+            y: [`${p.yStart}%`, `${p.yEnd1}%`, `${p.yEnd2}%`],
+            opacity: [0, p.opacity, 0],
+            scale: [0, p.scale, 0]
+          }}
+          transition={{ 
+            duration: p.duration,
+            repeat: Infinity,
+            delay: p.delay,
+            ease: "easeInOut"
+          }}
+          className={`absolute rounded-full ${p.isLarge ? 'w-1 h-1 bg-white' : 'w-[1px] h-[1px] bg-cyan-400'}`}
+          style={{ 
+            willChange: 'transform, opacity',
+            boxShadow: p.isLarge ? '0 0 12px rgba(34, 211, 238, 0.9)' : 'none'
+          }}
+        />
+      ))}
+
+      {/* Cinematic Lens Flare Streak (Horizon) */}
+      <div className="absolute top-[50%] left-0 w-full flex items-center justify-center pointer-events-none">
+        <motion.div 
+          animate={{ 
+            opacity: [0.1, 0.4, 0.1],
+            scaleX: [0.7, 1.5, 0.7],
+          }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+          className="w-full h-[1px] bg-gradient-to-r from-transparent via-cyan-300 to-transparent shadow-[0_0_40px_rgba(34,211,238,0.6)]" 
+          style={{ willChange: 'transform, opacity' }}
+        />
+        <motion.div 
+          animate={{ opacity: [0.2, 0.6, 0.2], scale: [1, 1.4, 1] }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute left-[65%] w-5 h-5 bg-white rounded-full blur-[10px] shadow-[0_0_30px_rgba(255,255,255,0.8)]" 
+          style={{ willChange: 'transform, opacity' }}
+        />
+      </div>
+
+      {/* Atmospheric Vignette & Glows */}
+      <div className="absolute bottom-0 left-0 w-full h-2/3 bg-gradient-to-t from-black via-transparent to-transparent opacity-50" />
+      <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-96 blur-[100px] ${isDarkMode ? 'bg-blue-900/5' : 'bg-indigo-100/5'}`} style={{ transform: 'translate3d(-50%, -50%, 0)' }} />
+    </div>
+  );
+});
+
 const AboutModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
@@ -139,71 +289,72 @@ const AboutModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void 
     >
       <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-md" onClick={onClose} />
       <motion.div 
-        initial={{ scale: 0.9, opacity: 0, y: 20 }}
+        initial={{ scale: 0.95, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
-        className="relative w-full max-w-4xl bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
+        exit={{ scale: 0.95, opacity: 0, y: 20 }}
+        transition={{ type: "spring", damping: 25, stiffness: 300 }}
+        className="relative w-full max-w-5xl bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col"
+        style={{ willChange: 'transform, opacity' }}
       >
-        <div className="p-8 sm:p-12 overflow-y-auto no-scrollbar">
-          <div className="flex justify-between items-start mb-10">
+        <div className="p-6 sm:p-10 overflow-hidden">
+          <div className="flex justify-between items-start mb-6">
             <div>
-              <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter mb-2">About Me</h2>
-              <div className="h-1.5 w-20 bg-indigo-600 rounded-full" />
+              <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter mb-1">About Me</h2>
+              <div className="h-1 w-16 bg-indigo-600 rounded-full" />
             </div>
-            <button onClick={onClose} className="p-3 rounded-full bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
-              <X className="w-6 h-6 text-slate-600 dark:text-slate-300" />
+            <button onClick={onClose} className="p-2 rounded-full bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
+              <X className="w-5 h-5 text-slate-600 dark:text-slate-300" />
             </button>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            <div className="space-y-8">
-              <section>
-                <h3 className="text-xs font-black uppercase tracking-[0.3em] text-indigo-600 dark:text-indigo-400 mb-4">The Journey</h3>
-                <p className="text-slate-600 dark:text-slate-400 leading-relaxed font-light">
-                  I am a passionate Java Full Stack Developer with a deep love for building scalable systems. My expertise lies in bridging the gap between complex backend logic and intuitive frontend experiences. I thrive on solving challenging problems and optimizing performance.
-                </p>
-              </section>
+          <div className="space-y-8">
+            <section>
+              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-600 dark:text-indigo-400 mb-3">The Journey</h3>
+              <p className="text-slate-600 dark:text-slate-400 leading-relaxed font-light text-sm max-w-3xl">
+                I am a passionate Java Full Stack Developer with a deep love for building scalable systems. My expertise lies in bridging the gap between complex backend logic and intuitive frontend experiences. I thrive on solving challenging problems and optimizing performance.
+              </p>
+            </section>
 
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <section>
-                <h3 className="text-xs font-black uppercase tracking-[0.3em] text-indigo-600 dark:text-indigo-400 mb-4">Experience Highlights</h3>
-                <div className="space-y-4">
+                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-600 dark:text-indigo-400 mb-3">Experience</h3>
+                <div className="space-y-3">
                   {[
-                    { role: "Senior Java Developer", company: "Tech Solutions Inc.", period: "2023 - Present" },
-                    { role: "Full Stack Engineer", company: "Innovate Web", period: "2021 - 2023" },
-                    { role: "Junior Developer", company: "StartUp Hub", period: "2019 - 2021" }
+                    { role: "Senior Java Developer", company: "Tech Solutions", period: "2023+" },
+                    { role: "Full Stack Engineer", company: "Innovate Web", period: "2021-23" },
+                    { role: "Junior Developer", company: "StartUp Hub", period: "2019-21" }
                   ].map((exp, i) => (
-                    <div key={i} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-700/50 border border-slate-100 dark:border-slate-700">
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="font-bold text-slate-900 dark:text-white">{exp.role}</span>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{exp.period}</span>
+                    <div key={i} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-700/50 border border-slate-100 dark:border-slate-700">
+                      <div className="flex justify-between items-center mb-0.5">
+                        <span className="font-bold text-xs text-slate-900 dark:text-white">{exp.role}</span>
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{exp.period}</span>
                       </div>
-                      <div className="text-xs text-slate-500 dark:text-slate-400">{exp.company}</div>
+                      <div className="text-[10px] text-slate-500 dark:text-slate-400">{exp.company}</div>
                     </div>
                   ))}
                 </div>
               </section>
-            </div>
 
-            <div className="space-y-8">
               <section>
-                <h3 className="text-xs font-black uppercase tracking-[0.3em] text-indigo-600 dark:text-indigo-400 mb-4">Key Projects</h3>
-                <div className="grid grid-cols-1 gap-4">
+                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-600 dark:text-indigo-400 mb-3">Projects</h3>
+                <div className="grid grid-cols-1 gap-3">
                   {[
-                    { name: "E-Commerce Engine", desc: "Scalable microservices architecture handling 10k+ daily transactions." },
-                    { name: "Analytics Dashboard", desc: "Real-time data visualization platform for enterprise metrics." }
+                    { name: "E-Commerce Engine", desc: "Microservices for 10k+ daily transactions." },
+                    { name: "Analytics Dashboard", desc: "Real-time visualization for enterprise metrics." }
                   ].map((project, i) => (
-                    <div key={i} className="p-5 rounded-2xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800/50">
-                      <h4 className="font-bold text-indigo-900 dark:text-indigo-300 mb-2">{project.name}</h4>
-                      <p className="text-xs text-indigo-700/70 dark:text-indigo-400/70 leading-relaxed">{project.desc}</p>
+                    <div key={i} className="p-3 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800/50">
+                      <h4 className="font-bold text-xs text-indigo-900 dark:text-indigo-300 mb-1">{project.name}</h4>
+                      <p className="text-[10px] text-indigo-700/70 dark:text-indigo-400/70 leading-tight">{project.desc}</p>
                     </div>
                   ))}
                 </div>
               </section>
 
               <section>
-                <h3 className="text-xs font-black uppercase tracking-[0.3em] text-indigo-600 dark:text-indigo-400 mb-4">Core Skills</h3>
-                <div className="flex flex-wrap gap-2">
+                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-600 dark:text-indigo-400 mb-3">Skills</h3>
+                <div className="flex flex-wrap gap-1.5">
                   {['Java', 'Spring Boot', 'React', 'TypeScript', 'PostgreSQL', 'Docker', 'AWS', 'Microservices', 'Redis', 'GraphQL'].map((skill) => (
-                    <span key={skill} className="px-3 py-1.5 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest">
+                    <span key={skill} className="px-2 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[9px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest">
                       {skill}
                     </span>
                   ))}
@@ -411,123 +562,8 @@ export default function App() {
       default:
         return (
           <div className="h-screen flex flex-col items-center justify-center relative overflow-hidden bg-slate-50 dark:bg-slate-900 transition-colors duration-500">
-            {/* Cinematic Cyber-Horizon Background (Refined) */}
-            <div className={`fixed inset-0 z-0 overflow-hidden pointer-events-none transition-opacity duration-1000 ${isDarkMode ? 'opacity-100' : 'opacity-20'}`} 
-                 style={{ background: isDarkMode ? 'radial-gradient(circle at 50% 30%, #0c1e35 0%, #020617 100%)' : 'radial-gradient(circle at 50% 50%, #f8fafc 0%, #e2e8f0 100%)' }}>
-              
-              {/* SVG Waves Container with Perspective */}
-              <div className="absolute inset-0 w-full h-full opacity-60">
-                <svg className="w-full h-full" viewBox="0 0 1440 800" preserveAspectRatio="none" style={{ display: 'block', minWidth: '100vw' }}>
-                  {[...Array(20)].map((_, i) => {
-                    const progress = i / 20;
-                    // Perspective: waves get closer and flatter as they move "back" (up)
-                    const baseY = 400 + Math.pow(progress, 1.5) * 400; 
-                    const amplitude = 20 + Math.pow(progress, 2) * 120; 
-                    const strokeWidth = 0.5 + progress * 2.5;
-                    const opacity = 0.05 + (1 - progress) * 0.4;
-                    
-                    // Generate more complex peaky paths with multiple segments
-                    const segments = 6;
-                    const segmentWidth = 1440 / segments;
-                    
-                    const generatePath = (ampMult: number) => {
-                      let d = `M-300,${baseY}`;
-                      for (let j = 0; j < segments; j++) {
-                        const x1 = j * segmentWidth + segmentWidth / 3;
-                        const x2 = j * segmentWidth + (segmentWidth * 2) / 3;
-                        const x3 = (j + 1) * segmentWidth;
-                        const y1 = baseY + (j % 2 === 0 ? -amplitude * ampMult : amplitude * ampMult);
-                        const y2 = baseY + (j % 2 === 0 ? -amplitude * ampMult : amplitude * ampMult);
-                        d += ` C${x1},${y1} ${x2},${y2} ${x3},${baseY}`;
-                      }
-                      d += ` L1740,${baseY}`;
-                      return d;
-                    };
-                    
-                    return (
-                      <motion.path
-                        key={`wave-${i}`}
-                        initial={{ d: generatePath(1), opacity: 0 }}
-                        animate={{
-                          d: [
-                            generatePath(1),
-                            generatePath(-1),
-                            generatePath(1)
-                          ],
-                          opacity: opacity
-                        }}
-                        transition={{
-                          d: {
-                            duration: 15 + (i % 6) * 5,
-                            repeat: Infinity,
-                            ease: "easeInOut",
-                            delay: i * 0.3
-                          },
-                          opacity: {
-                            duration: 2,
-                            delay: i * 0.1
-                          }
-                        }}
-                        fill="none"
-                        stroke={isDarkMode ? (i % 3 === 0 ? "#22d3ee" : i % 3 === 1 ? "#3b82f6" : "#1e40af") : "#6366f1"}
-                        strokeWidth={strokeWidth}
-                        strokeOpacity={opacity}
-                        style={{ filter: isDarkMode ? 'drop-shadow(0 0 20px rgba(34, 211, 238, 0.4))' : 'none' }}
-                      />
-                    );
-                  })}
-                </svg>
-              </div>
-
-              {/* Glowing Particles (Dust & Nodes) */}
-              {[...Array(100)].map((_, i) => (
-                <motion.div
-                  key={`node-${i}`}
-                  initial={{ 
-                    x: `${Math.random() * 100}%`, 
-                    y: `${40 + Math.random() * 60}%`,
-                    opacity: 0 
-                  }}
-                  animate={{ 
-                    y: [`${40 + Math.random() * 60}%`, `${42 + Math.random() * 58}%`, `${40 + Math.random() * 60}%`],
-                    opacity: [0, Math.random() * 0.7, 0],
-                    scale: [0, Math.random() * 1.5, 0]
-                  }}
-                  transition={{ 
-                    duration: 4 + Math.random() * 8,
-                    repeat: Infinity,
-                    delay: Math.random() * 10,
-                    ease: "easeInOut"
-                  }}
-                  className={`absolute rounded-full ${i % 10 === 0 ? 'w-1 h-1 bg-white' : 'w-[1px] h-[1px] bg-cyan-400'}`}
-                  style={{ 
-                    filter: 'blur(0.5px)',
-                    boxShadow: i % 10 === 0 ? '0 0 12px rgba(34, 211, 238, 0.9)' : 'none'
-                  }}
-                />
-              ))}
-
-              {/* Cinematic Lens Flare Streak (Horizon) */}
-              <div className="absolute top-[50%] left-0 w-full flex items-center justify-center pointer-events-none">
-                <motion.div 
-                  animate={{ 
-                    opacity: [0.1, 0.4, 0.1],
-                    scaleX: [0.7, 1.5, 0.7],
-                  }}
-                  transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-                  className="w-full h-[1px] bg-gradient-to-r from-transparent via-cyan-300 to-transparent shadow-[0_0_40px_rgba(34,211,238,0.6)] blur-[0.5px]" 
-                />
-                <motion.div 
-                  animate={{ opacity: [0.2, 0.6, 0.2], scale: [1, 1.4, 1] }}
-                  transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute left-[65%] w-5 h-5 bg-white rounded-full blur-[10px] shadow-[0_0_30px_rgba(255,255,255,0.8)]" 
-                />
-              </div>
-
-              {/* Atmospheric Vignette & Glows */}
-              <div className="absolute bottom-0 left-0 w-full h-2/3 bg-gradient-to-t from-black via-transparent to-transparent opacity-50" />
-              <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-96 blur-[160px] ${isDarkMode ? 'bg-blue-900/10' : 'bg-indigo-100/10'}`} />
-            </div>
+            {/* Cinematic Cyber-Horizon Background (Optimized) */}
+            <BackgroundAnimation isDarkMode={isDarkMode} />
 
             <div className="absolute top-8 right-8 z-50">
               <button 
