@@ -157,9 +157,6 @@ export default function App() {
                   <p>
                     Proficient in developing RESTful APIs, integrating complex components, and managing relational databases. I have a strong grasp of SDLC and agile methodologies, ensuring high-quality delivery at every stage.
                   </p>
-                  <p>
-                    My background in Civil Engineering gives me a unique perspective on structural integrity—a philosophy I apply to every line of code I write.
-                  </p>
                 </div>
               </div>
               <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-700">
@@ -318,59 +315,98 @@ export default function App() {
         );
       default:
         return (
-          <div className="h-screen flex flex-col items-center justify-center px-6 relative overflow-hidden bg-slate-50 dark:bg-slate-900 transition-colors duration-500">
-            {/* Background decorative elements with animation */}
-            <motion.div 
-              animate={{ 
-                scale: [1, 1.1, 1],
-                rotate: [0, 90, 0],
-                x: [0, 30, 0],
-                y: [0, 20, 0]
-              }}
-              transition={{ 
-                duration: 20, 
-                repeat: Infinity,
-                ease: "linear" 
-              }}
-              className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none dark:bg-indigo-500/5" 
-            />
-            <motion.div 
-              animate={{ 
-                scale: [1.1, 1, 1.1],
-                rotate: [0, -90, 0],
-                x: [0, -30, 0],
-                y: [0, -20, 0]
-              }}
-              transition={{ 
-                duration: 25, 
-                repeat: Infinity,
-                ease: "linear" 
-              }}
-              className="absolute bottom-[-20%] right-[-10%] w-[70%] h-[70%] bg-teal-500/10 rounded-full blur-[120px] pointer-events-none dark:bg-teal-500/5" 
-            />
+          <div className="h-screen flex flex-col items-center justify-center relative overflow-hidden bg-slate-50 dark:bg-slate-900 transition-colors duration-500">
+            {/* Cinematic Cyber-Horizon Background (Refined) */}
+            <div className={`absolute inset-0 z-0 overflow-hidden pointer-events-none transition-opacity duration-1000 ${isDarkMode ? 'opacity-100' : 'opacity-20'}`} 
+                 style={{ background: isDarkMode ? 'radial-gradient(circle at 50% 30%, #0c1e35 0%, #020617 100%)' : 'radial-gradient(circle at 50% 50%, #f8fafc 0%, #e2e8f0 100%)' }}>
+              
+              {/* SVG Waves Container with Perspective */}
+              <div className="absolute inset-0 opacity-60">
+                <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                  {[...Array(20)].map((_, i) => {
+                    const progress = i / 20;
+                    // Perspective: waves get closer and flatter as they move "back" (up)
+                    const baseY = 50 + Math.pow(progress, 1.5) * 50; 
+                    const amplitude = 1 + Math.pow(progress, 2) * 8; 
+                    const strokeWidth = 0.05 + progress * 0.2;
+                    const opacity = 0.05 + (1 - progress) * 0.4;
+                    
+                    return (
+                      <motion.path
+                        key={`wave-${i}`}
+                        initial={{ d: `M-10,${baseY} L110,${baseY}` }}
+                        animate={{
+                          d: [
+                            `M-10,${baseY} C${25 + (i % 4) * 5},${baseY - amplitude} ${50 - (i % 3) * 4},${baseY + amplitude} ${75 + (i % 5) * 3},${baseY - amplitude} 110,${baseY}`,
+                            `M-10,${baseY} C${25 - (i % 4) * 5},${baseY + amplitude} ${50 + (i % 3) * 4},${baseY - amplitude} ${75 - (i % 5) * 3},${baseY + amplitude} 110,${baseY}`,
+                            `M-10,${baseY} C${25 + (i % 4) * 5},${baseY - amplitude} ${50 - (i % 3) * 4},${baseY + amplitude} ${75 + (i % 5) * 3},${baseY - amplitude} 110,${baseY}`
+                          ]
+                        }}
+                        transition={{
+                          duration: 10 + (i % 6) * 4,
+                          repeat: Infinity,
+                          ease: "easeInOut",
+                          delay: i * 0.25
+                        }}
+                        fill="none"
+                        stroke={isDarkMode ? (i % 3 === 0 ? "#22d3ee" : i % 3 === 1 ? "#3b82f6" : "#1e40af") : "#6366f1"}
+                        strokeWidth={strokeWidth}
+                        strokeOpacity={opacity}
+                        style={{ filter: isDarkMode ? 'drop-shadow(0 0 12px rgba(34, 211, 238, 0.3))' : 'none' }}
+                      />
+                    );
+                  })}
+                </svg>
+              </div>
 
-            {/* Floating particles animation */}
-            <div className="absolute inset-0 pointer-events-none overflow-hidden">
-              {[...Array(6)].map((_, i) => (
+              {/* Glowing Particles (Dust & Nodes) */}
+              {[...Array(100)].map((_, i) => (
                 <motion.div
-                  key={i}
-                  animate={{
-                    y: [0, -100, 0],
-                    x: [0, i % 2 === 0 ? 30 : -30, 0],
-                    opacity: [0.1, 0.3, 0.1]
+                  key={`node-${i}`}
+                  initial={{ 
+                    x: `${Math.random() * 100}%`, 
+                    y: `${40 + Math.random() * 60}%`,
+                    opacity: 0 
                   }}
-                  transition={{
-                    duration: 10 + i * 2,
+                  animate={{ 
+                    y: [`${40 + Math.random() * 60}%`, `${42 + Math.random() * 58}%`, `${40 + Math.random() * 60}%`],
+                    opacity: [0, Math.random() * 0.7, 0],
+                    scale: [0, Math.random() * 1.5, 0]
+                  }}
+                  transition={{ 
+                    duration: 4 + Math.random() * 8,
                     repeat: Infinity,
+                    delay: Math.random() * 10,
                     ease: "easeInOut"
                   }}
-                  className="absolute w-1 h-1 bg-indigo-400 rounded-full"
-                  style={{
-                    top: `${20 + i * 15}%`,
-                    left: `${10 + i * 15}%`
+                  className={`absolute rounded-full ${i % 10 === 0 ? 'w-1 h-1 bg-white' : 'w-[1px] h-[1px] bg-cyan-400'}`}
+                  style={{ 
+                    filter: 'blur(0.5px)',
+                    boxShadow: i % 10 === 0 ? '0 0 12px rgba(34, 211, 238, 0.9)' : 'none'
                   }}
                 />
               ))}
+
+              {/* Cinematic Lens Flare Streak (Horizon) */}
+              <div className="absolute top-[50%] left-0 w-full flex items-center justify-center pointer-events-none">
+                <motion.div 
+                  animate={{ 
+                    opacity: [0.1, 0.4, 0.1],
+                    scaleX: [0.7, 1.5, 0.7],
+                  }}
+                  transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+                  className="w-full h-[1px] bg-gradient-to-r from-transparent via-cyan-300 to-transparent shadow-[0_0_40px_rgba(34,211,238,0.6)] blur-[0.5px]" 
+                />
+                <motion.div 
+                  animate={{ opacity: [0.2, 0.6, 0.2], scale: [1, 1.4, 1] }}
+                  transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+                  className="absolute left-[65%] w-5 h-5 bg-white rounded-full blur-[10px] shadow-[0_0_30px_rgba(255,255,255,0.8)]" 
+                />
+              </div>
+
+              {/* Atmospheric Vignette & Glows */}
+              <div className="absolute bottom-0 left-0 w-full h-2/3 bg-gradient-to-t from-black via-transparent to-transparent opacity-50" />
+              <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-96 blur-[160px] ${isDarkMode ? 'bg-blue-900/10' : 'bg-indigo-100/10'}`} />
             </div>
 
             <div className="absolute top-8 right-8 z-50">
@@ -382,7 +418,7 @@ export default function App() {
               </button>
             </div>
 
-            <div className="flex flex-col items-center justify-center w-full max-w-7xl mx-auto z-10 -mt-12 sm:-mt-16">
+            <div className="flex flex-col items-center justify-center w-full max-w-7xl mx-auto z-10 -mt-12 sm:-mt-16 px-6">
               <motion.div 
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
