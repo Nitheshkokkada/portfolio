@@ -5,6 +5,16 @@
   --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
 }
 
+@variant dark (&:where(.dark, .dark *));
+
 body {
-  @apply bg-[#f8f9fa] text-[#2e3335] antialiased;
+  @apply antialiased transition-colors duration-300;
+}
+
+@utility no-scrollbar {
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

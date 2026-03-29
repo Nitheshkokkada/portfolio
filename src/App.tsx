@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
-  Home, 
   User, 
   Briefcase, 
   Code2, 
@@ -15,11 +14,13 @@ import {
   Cpu,
   Layout,
   Layers,
-  Server
+  Server,
+  Moon,
+  Sun
 } from 'lucide-react';
 
 // --- Types ---
-type Section = 'home' | 'about' | 'projects' | 'skills' | 'contact' | null;
+type Section = 'about' | 'projects' | 'skills' | 'contact' | null;
 
 interface Project {
   title: string;
@@ -76,30 +77,25 @@ const TileCard = ({
   icon: Icon, 
   color, 
   onClick, 
-  subtitle 
 }: { 
   title: string; 
   icon: any; 
   color: string; 
   onClick: () => void;
-  subtitle?: string;
 }) => (
   <motion.button
     whileHover={{ scale: 1.05, y: -5 }}
     whileTap={{ scale: 0.95 }}
     onClick={onClick}
-    className={`relative aspect-square w-full rounded-2xl p-8 flex flex-col justify-between text-left transition-shadow hover:shadow-2xl overflow-hidden group ${color}`}
+    className={`relative w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 rounded-full flex flex-col items-center justify-center text-center transition-all hover:shadow-[0_15px_40px_rgba(0,0,0,0.12)] overflow-hidden group ${color} shadow-lg shrink-0`}
   >
-    <div className="z-10">
-      <div className="bg-white/20 w-12 h-12 rounded-xl flex items-center justify-center mb-6 backdrop-blur-sm group-hover:bg-white/30 transition-colors">
-        <Icon className="w-6 h-6 text-white" />
+    <div className="z-10 flex flex-col items-center">
+      <div className="bg-white/20 p-2 sm:p-3.5 rounded-full mb-1 sm:mb-2 backdrop-blur-md group-hover:bg-white/30 transition-colors">
+        <Icon className="w-4 h-4 sm:w-7 sm:h-7 text-white" />
       </div>
-      <h3 className="text-2xl font-bold text-white tracking-tight">{title}</h3>
+      <h3 className="text-[8px] sm:text-[10px] lg:text-xs font-black text-white uppercase tracking-[0.2em] sm:tracking-[0.25em]">{title}</h3>
     </div>
-    {subtitle && (
-      <p className="z-10 text-white/80 text-sm font-medium uppercase tracking-widest">{subtitle}</p>
-    )}
-    <div className="absolute -right-4 -bottom-4 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
+    <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
   </motion.button>
 );
 
@@ -112,12 +108,12 @@ const SectionWrapper = ({ children, onBack }: { children: React.ReactNode; onBac
   >
     <button 
       onClick={onBack}
-      className="flex items-center gap-2 text-slate-500 hover:text-primary transition-colors mb-8 group"
+      className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors mb-8 group"
     >
-      <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center group-hover:bg-slate-50 transition-colors">
+      <div className="w-10 h-10 rounded-full bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center group-hover:bg-slate-50 dark:group-hover:bg-slate-700 transition-colors">
         <ArrowLeft className="w-5 h-5" />
       </div>
-      <span className="font-semibold uppercase tracking-widest text-sm">Back to Gallery</span>
+      <span className="font-semibold uppercase tracking-widest text-xs">Back to Gallery</span>
     </button>
     {children}
   </motion.div>
@@ -125,46 +121,36 @@ const SectionWrapper = ({ children, onBack }: { children: React.ReactNode; onBac
 
 export default function App() {
   const [activeSection, setActiveSection] = useState<Section>(null);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    // Check localStorage or system preference on initial state
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('theme');
+      if (saved) return saved === 'dark';
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (isDarkMode) {
+      root.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      root.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [isDarkMode]);
 
   const renderSection = () => {
     switch (activeSection) {
-      case 'home':
-        return (
-          <SectionWrapper onBack={() => setActiveSection(null)}>
-            <div className="space-y-8">
-              <div className="inline-block px-4 py-1.5 rounded-full bg-indigo-100 text-indigo-600 text-xs font-bold uppercase tracking-widest">
-                Welcome
-              </div>
-              <h1 className="text-6xl md:text-8xl font-extrabold tracking-tighter leading-none">
-                Nithesha <span className="text-indigo-600">K.</span>
-              </h1>
-              <p className="text-2xl md:text-3xl text-slate-500 font-light max-w-2xl leading-relaxed">
-                Java Full Stack Developer crafting scalable web applications with precision and modern architecture.
-              </p>
-              <div className="pt-8 flex gap-4">
-                <button 
-                  onClick={() => setActiveSection('projects')}
-                  className="px-8 py-4 bg-indigo-600 text-white rounded-full font-bold uppercase tracking-widest hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200"
-                >
-                  View Projects
-                </button>
-                <button 
-                  onClick={() => setActiveSection('contact')}
-                  className="px-8 py-4 bg-white text-slate-900 border border-slate-200 rounded-full font-bold uppercase tracking-widest hover:bg-slate-50 transition-colors"
-                >
-                  Get in touch
-                </button>
-              </div>
-            </div>
-          </SectionWrapper>
-        );
       case 'about':
         return (
           <SectionWrapper onBack={() => setActiveSection(null)}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
               <div className="space-y-6">
-                <h2 className="text-4xl font-bold tracking-tight">The Creative Journey</h2>
-                <div className="space-y-4 text-lg text-slate-600 leading-relaxed">
+                <h2 className="text-4xl font-bold tracking-tight dark:text-white">The Creative Journey</h2>
+                <div className="space-y-4 text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
                   <p>
                     I am a dedicated Java Full Stack Developer with 3 years of experience in building scalable web applications. My expertise lies in the intersection of robust backend logic and fluid frontend interfaces.
                   </p>
@@ -176,33 +162,33 @@ export default function App() {
                   </p>
                 </div>
               </div>
-              <div className="bg-white p-8 rounded-3xl shadow-xl border border-slate-100">
+              <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-700">
                 <div className="space-y-6">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center">
-                      <Briefcase className="w-6 h-6 text-indigo-600" />
+                    <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center">
+                      <Briefcase className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
                     </div>
                     <div>
-                      <h4 className="font-bold">3+ Years Experience</h4>
-                      <p className="text-sm text-slate-500">Full Stack Development</p>
+                      <h4 className="font-bold dark:text-white">3+ Years Experience</h4>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">Full Stack Development</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-teal-50 flex items-center justify-center">
-                      <Code2 className="w-6 h-6 text-teal-600" />
+                    <div className="w-12 h-12 rounded-2xl bg-teal-50 dark:bg-teal-900/30 flex items-center justify-center">
+                      <Code2 className="w-6 h-6 text-teal-600 dark:text-teal-400" />
                     </div>
                     <div>
-                      <h4 className="font-bold">Modern Stack</h4>
-                      <p className="text-sm text-slate-500">Java, Spring, Angular</p>
+                      <h4 className="font-bold dark:text-white">Modern Stack</h4>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">Java, Spring, Angular</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center">
-                      <Server className="w-6 h-6 text-amber-600" />
+                    <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-900/30 flex items-center justify-center">
+                      <Server className="w-6 h-6 text-amber-600 dark:text-amber-400" />
                     </div>
                     <div>
-                      <h4 className="font-bold">Scalable Systems</h4>
-                      <p className="text-sm text-slate-500">Microservices & Cloud</p>
+                      <h4 className="font-bold dark:text-white">Scalable Systems</h4>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">Microservices & Cloud</p>
                     </div>
                   </div>
                 </div>
@@ -214,27 +200,27 @@ export default function App() {
         return (
           <SectionWrapper onBack={() => setActiveSection(null)}>
             <div className="space-y-12">
-              <h2 className="text-4xl font-bold tracking-tight">Digital Artifacts</h2>
+              <h2 className="text-4xl font-bold tracking-tight dark:text-white">Digital Artifacts</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {PROJECTS.map((project, idx) => (
                   <motion.div 
                     key={idx}
                     whileHover={{ y: -5 }}
-                    className="bg-white p-8 rounded-3xl shadow-lg border border-slate-100 flex flex-col justify-between"
+                    className="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-lg border border-slate-100 dark:border-slate-700 flex flex-col justify-between"
                   >
                     <div>
-                      <span className="text-xs font-bold text-indigo-600 uppercase tracking-widest mb-2 block">{project.period}</span>
-                      <h3 className="text-2xl font-bold mb-3">{project.title}</h3>
-                      <p className="text-slate-600 mb-6 leading-relaxed">{project.description}</p>
+                      <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mb-2 block">{project.period}</span>
+                      <h3 className="text-2xl font-bold mb-3 dark:text-white">{project.title}</h3>
+                      <p className="text-slate-600 dark:text-slate-300 mb-6 leading-relaxed">{project.description}</p>
                       <div className="flex flex-wrap gap-2 mb-6">
                         {project.tech.map(t => (
-                          <span key={t} className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-semibold">{t}</span>
+                          <span key={t} className="px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full text-xs font-semibold">{t}</span>
                         ))}
                       </div>
                     </div>
-                    <div className="flex items-center justify-between pt-4 border-t border-slate-50">
-                      <span className="text-sm font-medium text-slate-400">{project.role}</span>
-                      <ExternalLink className="w-5 h-5 text-slate-300" />
+                    <div className="flex items-center justify-between pt-4 border-t border-slate-50 dark:border-slate-700">
+                      <span className="text-sm font-medium text-slate-400 dark:text-slate-500">{project.role}</span>
+                      <ExternalLink className="w-5 h-5 text-slate-300 dark:text-slate-600" />
                     </div>
                   </motion.div>
                 ))}
@@ -246,19 +232,19 @@ export default function App() {
         return (
           <SectionWrapper onBack={() => setActiveSection(null)}>
             <div className="space-y-12">
-              <h2 className="text-4xl font-bold tracking-tight">Technical Arsenal</h2>
+              <h2 className="text-4xl font-bold tracking-tight dark:text-white">Technical Arsenal</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {SKILLS.map((skill, idx) => (
-                  <div key={idx} className="bg-white p-8 rounded-3xl shadow-md border border-slate-100">
+                  <div key={idx} className="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-md border border-slate-100 dark:border-slate-700">
                     <div className="flex items-center gap-4 mb-6">
-                      <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-indigo-600">
+                      <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-slate-700 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
                         {skill.icon}
                       </div>
-                      <h3 className="text-xl font-bold">{skill.category}</h3>
+                      <h3 className="text-xl font-bold dark:text-white">{skill.category}</h3>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {skill.items.map(item => (
-                        <span key={item} className="px-4 py-2 bg-slate-50 text-slate-700 rounded-xl text-sm font-medium border border-slate-100">
+                        <span key={item} className="px-4 py-2 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-sm font-medium border border-slate-100 dark:border-slate-600">
                           {item}
                         </span>
                       ))}
@@ -274,53 +260,53 @@ export default function App() {
           <SectionWrapper onBack={() => setActiveSection(null)}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
               <div className="space-y-8">
-                <h2 className="text-4xl font-bold tracking-tight">Let's Connect</h2>
-                <p className="text-lg text-slate-600 leading-relaxed">
+                <h2 className="text-4xl font-bold tracking-tight dark:text-white">Let's Connect</h2>
+                <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
                   I'm always open to discussing new projects, creative ideas or opportunities to be part of your visions.
                 </p>
                 <div className="space-y-4">
-                  <a href="mailto:nitheshkokkada3@gmail.com" className="flex items-center gap-4 p-4 bg-white rounded-2xl shadow-sm border border-slate-100 hover:border-indigo-200 transition-colors group">
-                    <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-100 transition-colors">
-                      <Mail className="w-6 h-6 text-indigo-600" />
+                  <a href="mailto:nitheshkokkada3@gmail.com" className="flex items-center gap-4 p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 hover:border-indigo-200 dark:hover:border-indigo-800 transition-colors group">
+                    <div className="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/50 transition-colors">
+                      <Mail className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Email</p>
-                      <p className="font-bold">nitheshkokkada3@gmail.com</p>
+                      <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Email</p>
+                      <p className="font-bold dark:text-white">nitheshkokkada3@gmail.com</p>
                     </div>
                   </a>
-                  <a href="https://linkedin.com/in/nithesha-k-49bb2a194" target="_blank" rel="noreferrer" className="flex items-center gap-4 p-4 bg-white rounded-2xl shadow-sm border border-slate-100 hover:border-blue-200 transition-colors group">
-                    <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center group-hover:bg-blue-100 transition-colors">
-                      <Linkedin className="w-6 h-6 text-blue-600" />
+                  <a href="https://linkedin.com/in/nithesha-k-49bb2a194" target="_blank" rel="noreferrer" className="flex items-center gap-4 p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 hover:border-blue-200 dark:hover:border-blue-800 transition-colors group">
+                    <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50 transition-colors">
+                      <Linkedin className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">LinkedIn</p>
-                      <p className="font-bold">nithesha-k-49bb2a194</p>
+                      <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">LinkedIn</p>
+                      <p className="font-bold dark:text-white">nithesha-k-49bb2a194</p>
                     </div>
                   </a>
-                  <div className="flex items-center gap-4 p-4 bg-white rounded-2xl shadow-sm border border-slate-100 hover:border-slate-200 transition-colors group">
-                    <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center group-hover:bg-slate-100 transition-colors">
-                      <Github className="w-6 h-6 text-slate-600" />
+                  <div className="flex items-center gap-4 p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 hover:border-slate-200 dark:hover:border-slate-600 transition-colors group">
+                    <div className="w-12 h-12 rounded-xl bg-slate-50 dark:bg-slate-700 flex items-center justify-center group-hover:bg-slate-100 dark:group-hover:bg-slate-600 transition-colors">
+                      <Github className="w-6 h-6 text-slate-600 dark:text-slate-400" />
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">GitHub</p>
-                      <p className="font-bold">nithesh-k</p>
+                      <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">GitHub</p>
+                      <p className="font-bold dark:text-white">nithesh-k</p>
                     </div>
                   </div>
                 </div>
               </div>
-              <div className="bg-white p-10 rounded-3xl shadow-xl border border-slate-100">
+              <div className="bg-white dark:bg-slate-800 p-10 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-700">
                 <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-slate-400 uppercase tracking-widest ml-1">Name</label>
-                    <input type="text" className="w-full p-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500/20 transition-all" placeholder="Your full name" />
+                    <label className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Name</label>
+                    <input type="text" className="w-full p-4 bg-slate-50 dark:bg-slate-700 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500/20 dark:text-white transition-all" placeholder="Your full name" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-slate-400 uppercase tracking-widest ml-1">Email</label>
-                    <input type="email" className="w-full p-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500/20 transition-all" placeholder="hello@example.com" />
+                    <label className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Email</label>
+                    <input type="email" className="w-full p-4 bg-slate-50 dark:bg-slate-700 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500/20 dark:text-white transition-all" placeholder="hello@example.com" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-slate-400 uppercase tracking-widest ml-1">Message</label>
-                    <textarea rows={4} className="w-full p-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500/20 transition-all" placeholder="Tell me about your project..." />
+                    <label className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Message</label>
+                    <textarea rows={4} className="w-full p-4 bg-slate-50 dark:bg-slate-700 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500/20 dark:text-white transition-all" placeholder="Tell me about your project..." />
                   </div>
                   <button className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold uppercase tracking-widest hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200">
                     Send Message
@@ -332,69 +318,122 @@ export default function App() {
         );
       default:
         return (
-          <div className="min-h-screen flex flex-col justify-center px-6 max-w-7xl mx-auto py-20">
+          <div className="h-screen flex flex-col items-center justify-center px-6 relative overflow-hidden bg-slate-50 dark:bg-slate-900 transition-colors duration-500">
+            {/* Background decorative elements with animation */}
             <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-16 text-center md:text-left"
-            >
-              <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter mb-4">
-                Nithesha <span className="text-indigo-600">K.</span>
-              </h1>
-              <p className="text-xl md:text-2xl text-slate-500 font-light max-w-xl leading-relaxed">
-                A digital curator crafting atmospheric web experiences through minimalist design and technical precision.
-              </p>
-            </motion.div>
+              animate={{ 
+                scale: [1, 1.1, 1],
+                rotate: [0, 90, 0],
+                x: [0, 30, 0],
+                y: [0, 20, 0]
+              }}
+              transition={{ 
+                duration: 20, 
+                repeat: Infinity,
+                ease: "linear" 
+              }}
+              className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none dark:bg-indigo-500/5" 
+            />
+            <motion.div 
+              animate={{ 
+                scale: [1.1, 1, 1.1],
+                rotate: [0, -90, 0],
+                x: [0, -30, 0],
+                y: [0, -20, 0]
+              }}
+              transition={{ 
+                duration: 25, 
+                repeat: Infinity,
+                ease: "linear" 
+              }}
+              className="absolute bottom-[-20%] right-[-10%] w-[70%] h-[70%] bg-teal-500/10 rounded-full blur-[120px] pointer-events-none dark:bg-teal-500/5" 
+            />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              <TileCard 
-                title="Home" 
-                icon={Home} 
-                color="bg-indigo-600" 
-                subtitle="Intro & Philosophy"
-                onClick={() => setActiveSection('home')} 
-              />
-              <TileCard 
-                title="About" 
-                icon={User} 
-                color="bg-teal-500" 
-                subtitle="The Creative Journey"
-                onClick={() => setActiveSection('about')} 
-              />
-              <TileCard 
-                title="Projects" 
-                icon={Briefcase} 
-                color="bg-amber-500" 
-                subtitle="Curated Artifacts"
-                onClick={() => setActiveSection('projects')} 
-              />
-              <TileCard 
-                title="Skills" 
-                icon={Code2} 
-                color="bg-rose-500" 
-                subtitle="Tooling & Craft"
-                onClick={() => setActiveSection('skills')} 
-              />
-              <TileCard 
-                title="Contact" 
-                icon={Mail} 
-                color="bg-indigo-400" 
-                subtitle="Let's Connect"
-                onClick={() => setActiveSection('contact')} 
-              />
-              <div className="hidden lg:flex aspect-square border-2 border-dashed border-slate-200 rounded-2xl p-8 flex-col justify-center items-center text-center opacity-40 hover:opacity-100 transition-opacity">
-                <p className="text-xs uppercase tracking-[0.2em] font-bold leading-relaxed text-slate-400">
-                  Currently exploring<br/>the intersections of<br/>motion and code.
+            {/* Floating particles animation */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+              {[...Array(6)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  animate={{
+                    y: [0, -100, 0],
+                    x: [0, i % 2 === 0 ? 30 : -30, 0],
+                    opacity: [0.1, 0.3, 0.1]
+                  }}
+                  transition={{
+                    duration: 10 + i * 2,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                  className="absolute w-1 h-1 bg-indigo-400 rounded-full"
+                  style={{
+                    top: `${20 + i * 15}%`,
+                    left: `${10 + i * 15}%`
+                  }}
+                />
+              ))}
+            </div>
+
+            <div className="absolute top-8 right-8 z-50">
+              <button 
+                onClick={() => setIsDarkMode(!isDarkMode)}
+                className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white dark:bg-slate-800 shadow-2xl flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all border border-slate-200 dark:border-slate-700 active:scale-95"
+              >
+                {isDarkMode ? <Sun className="w-6 h-6 sm:w-7 sm:h-7" /> : <Moon className="w-6 h-6 sm:w-7 sm:h-7" />}
+              </button>
+            </div>
+
+            <div className="flex flex-col items-center justify-center w-full max-w-7xl mx-auto z-10 -mt-12 sm:-mt-16">
+              <motion.div 
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                className="mb-8 sm:mb-12 lg:mb-14 text-center"
+              >
+                <div className="inline-block px-4 py-1.5 sm:px-6 sm:py-2 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-[10px] sm:text-xs font-black uppercase tracking-[0.3em] mb-4 sm:mb-6 shadow-sm">
+                  Java Full Stack Developer
+                </div>
+                <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tighter mb-4 sm:mb-6 text-slate-900 dark:text-white leading-none">
+                  Nithesha <span className="text-indigo-600 dark:text-indigo-400">K.</span>
+                </h1>
+                <p className="text-xs sm:text-base lg:text-lg text-slate-600 dark:text-slate-400 font-light max-w-2xl leading-relaxed mx-auto px-4">
+                  Crafting scalable web applications with precision and modern architecture. Dedicated to building robust backend logic and fluid frontend interfaces.
                 </p>
+              </motion.div>
+
+              <div className="flex flex-row flex-nowrap justify-center items-center gap-3 sm:gap-5 lg:gap-6 w-full overflow-x-auto no-scrollbar pt-10 pb-10 px-4">
+                <TileCard 
+                  title="About" 
+                  icon={User} 
+                  color="bg-teal-500" 
+                  onClick={() => setActiveSection('about')} 
+                />
+                <TileCard 
+                  title="Projects" 
+                  icon={Briefcase} 
+                  color="bg-amber-500" 
+                  onClick={() => setActiveSection('projects')} 
+                />
+                <TileCard 
+                  title="Skills" 
+                  icon={Code2} 
+                  color="bg-rose-500" 
+                  onClick={() => setActiveSection('skills')} 
+                />
+                <TileCard 
+                  title="Contact" 
+                  icon={Mail} 
+                  color="bg-indigo-600" 
+                  onClick={() => setActiveSection('contact')} 
+                />
               </div>
             </div>
 
-            <footer className="mt-24 pt-12 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-6">
-              <span className="text-xs font-bold uppercase tracking-widest text-slate-400">© 2026 Ethereal Gallery</span>
-              <div className="flex gap-8">
-                <a href="#" className="text-xs font-bold uppercase tracking-widest text-slate-400 hover:text-indigo-600 transition-colors">LinkedIn</a>
-                <a href="#" className="text-xs font-bold uppercase tracking-widest text-slate-400 hover:text-indigo-600 transition-colors">GitHub</a>
-                <a href="#" className="text-xs font-bold uppercase tracking-widest text-slate-400 hover:text-indigo-600 transition-colors">Contact</a>
+            <footer className="absolute bottom-6 w-full max-w-6xl flex flex-col md:flex-row justify-between items-center px-8 gap-4 z-10">
+              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">© 2026 Nithesha K.</span>
+              <div className="flex gap-6 sm:gap-10">
+                <a href="https://linkedin.com/in/nithesha-k-49bb2a194" target="_blank" rel="noreferrer" className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">LinkedIn</a>
+                <a href="#" className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">GitHub</a>
+                <a href="mailto:nitheshkokkada3@gmail.com" className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Email</a>
               </div>
             </footer>
           </div>
@@ -403,7 +442,7 @@ export default function App() {
   };
 
   return (
-    <div className="font-sans">
+    <div className={`font-sans min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300 ${isDarkMode ? 'dark' : ''}`}>
       <AnimatePresence mode="wait">
         {renderSection()}
       </AnimatePresence>
