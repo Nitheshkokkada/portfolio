@@ -16,7 +16,8 @@ import {
   Layers,
   Server,
   Moon,
-  Sun
+  Sun,
+  X
 } from 'lucide-react';
 
 // --- Types ---
@@ -99,28 +100,126 @@ const TileCard = ({
   </motion.button>
 );
 
-const SectionWrapper = ({ children, onBack }: { children: React.ReactNode; onBack: () => void }) => (
+const SectionWrapper = ({ children, onBack, title }: { children: React.ReactNode; onBack: () => void; title?: string }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     exit={{ opacity: 0, y: -20 }}
     className="min-h-screen pt-24 pb-12 px-6 max-w-5xl mx-auto"
   >
-    <button 
-      onClick={onBack}
-      className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors mb-8 group"
-    >
-      <div className="w-10 h-10 rounded-full bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center group-hover:bg-slate-50 dark:group-hover:bg-slate-700 transition-colors">
-        <ArrowLeft className="w-5 h-5" />
-      </div>
-      <span className="font-semibold uppercase tracking-widest text-xs">Back to Gallery</span>
-    </button>
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-12">
+      <button 
+        onClick={onBack}
+        className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors group"
+      >
+        <div className="w-10 h-10 rounded-full bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center group-hover:bg-slate-50 dark:group-hover:bg-slate-700 transition-colors">
+          <ArrowLeft className="w-5 h-5" />
+        </div>
+        <span className="font-semibold uppercase tracking-widest text-xs">Back to Gallery</span>
+      </button>
+      {title && (
+        <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">
+          {title}
+        </h2>
+      )}
+    </div>
     {children}
   </motion.div>
 );
 
+const AboutModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+  if (!isOpen) return null;
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
+    >
+      <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-md" onClick={onClose} />
+      <motion.div 
+        initial={{ scale: 0.9, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        className="relative w-full max-w-4xl bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
+      >
+        <div className="p-8 sm:p-12 overflow-y-auto no-scrollbar">
+          <div className="flex justify-between items-start mb-10">
+            <div>
+              <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter mb-2">About Me</h2>
+              <div className="h-1.5 w-20 bg-indigo-600 rounded-full" />
+            </div>
+            <button onClick={onClose} className="p-3 rounded-full bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
+              <X className="w-6 h-6 text-slate-600 dark:text-slate-300" />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <div className="space-y-8">
+              <section>
+                <h3 className="text-xs font-black uppercase tracking-[0.3em] text-indigo-600 dark:text-indigo-400 mb-4">The Journey</h3>
+                <p className="text-slate-600 dark:text-slate-400 leading-relaxed font-light">
+                  I am a passionate Java Full Stack Developer with a deep love for building scalable systems. My expertise lies in bridging the gap between complex backend logic and intuitive frontend experiences. I thrive on solving challenging problems and optimizing performance.
+                </p>
+              </section>
+
+              <section>
+                <h3 className="text-xs font-black uppercase tracking-[0.3em] text-indigo-600 dark:text-indigo-400 mb-4">Experience Highlights</h3>
+                <div className="space-y-4">
+                  {[
+                    { role: "Senior Java Developer", company: "Tech Solutions Inc.", period: "2023 - Present" },
+                    { role: "Full Stack Engineer", company: "Innovate Web", period: "2021 - 2023" },
+                    { role: "Junior Developer", company: "StartUp Hub", period: "2019 - 2021" }
+                  ].map((exp, i) => (
+                    <div key={i} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-700/50 border border-slate-100 dark:border-slate-700">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="font-bold text-slate-900 dark:text-white">{exp.role}</span>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{exp.period}</span>
+                      </div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400">{exp.company}</div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            </div>
+
+            <div className="space-y-8">
+              <section>
+                <h3 className="text-xs font-black uppercase tracking-[0.3em] text-indigo-600 dark:text-indigo-400 mb-4">Key Projects</h3>
+                <div className="grid grid-cols-1 gap-4">
+                  {[
+                    { name: "E-Commerce Engine", desc: "Scalable microservices architecture handling 10k+ daily transactions." },
+                    { name: "Analytics Dashboard", desc: "Real-time data visualization platform for enterprise metrics." }
+                  ].map((project, i) => (
+                    <div key={i} className="p-5 rounded-2xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800/50">
+                      <h4 className="font-bold text-indigo-900 dark:text-indigo-300 mb-2">{project.name}</h4>
+                      <p className="text-xs text-indigo-700/70 dark:text-indigo-400/70 leading-relaxed">{project.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <section>
+                <h3 className="text-xs font-black uppercase tracking-[0.3em] text-indigo-600 dark:text-indigo-400 mb-4">Core Skills</h3>
+                <div className="flex flex-wrap gap-2">
+                  {['Java', 'Spring Boot', 'React', 'TypeScript', 'PostgreSQL', 'Docker', 'AWS', 'Microservices', 'Redis', 'GraphQL'].map((skill) => (
+                    <span key={skill} className="px-3 py-1.5 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest">
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
+
 export default function App() {
   const [activeSection, setActiveSection] = useState<Section>(null);
+  const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(() => {
     // Check localStorage or system preference on initial state
     if (typeof window !== 'undefined') {
@@ -146,10 +245,9 @@ export default function App() {
     switch (activeSection) {
       case 'about':
         return (
-          <SectionWrapper onBack={() => setActiveSection(null)}>
+          <SectionWrapper onBack={() => setActiveSection(null)} title="The Creative Journey">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
               <div className="space-y-6">
-                <h2 className="text-4xl font-bold tracking-tight dark:text-white">The Creative Journey</h2>
                 <div className="space-y-4 text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
                   <p>
                     I am a dedicated Java Full Stack Developer with 3 years of experience in building scalable web applications. My expertise lies in the intersection of robust backend logic and fluid frontend interfaces.
@@ -195,9 +293,8 @@ export default function App() {
         );
       case 'projects':
         return (
-          <SectionWrapper onBack={() => setActiveSection(null)}>
+          <SectionWrapper onBack={() => setActiveSection(null)} title="Digital Artifacts">
             <div className="space-y-12">
-              <h2 className="text-4xl font-bold tracking-tight dark:text-white">Digital Artifacts</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {PROJECTS.map((project, idx) => (
                   <motion.div 
@@ -227,9 +324,8 @@ export default function App() {
         );
       case 'skills':
         return (
-          <SectionWrapper onBack={() => setActiveSection(null)}>
+          <SectionWrapper onBack={() => setActiveSection(null)} title="Technical Arsenal">
             <div className="space-y-12">
-              <h2 className="text-4xl font-bold tracking-tight dark:text-white">Technical Arsenal</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {SKILLS.map((skill, idx) => (
                   <div key={idx} className="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-md border border-slate-100 dark:border-slate-700">
@@ -254,10 +350,9 @@ export default function App() {
         );
       case 'contact':
         return (
-          <SectionWrapper onBack={() => setActiveSection(null)}>
+          <SectionWrapper onBack={() => setActiveSection(null)} title="Let's Connect">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
               <div className="space-y-8">
-                <h2 className="text-4xl font-bold tracking-tight dark:text-white">Let's Connect</h2>
                 <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
                   I'm always open to discussing new projects, creative ideas or opportunities to be part of your visions.
                 </p>
@@ -317,42 +412,67 @@ export default function App() {
         return (
           <div className="h-screen flex flex-col items-center justify-center relative overflow-hidden bg-slate-50 dark:bg-slate-900 transition-colors duration-500">
             {/* Cinematic Cyber-Horizon Background (Refined) */}
-            <div className={`absolute inset-0 z-0 overflow-hidden pointer-events-none transition-opacity duration-1000 ${isDarkMode ? 'opacity-100' : 'opacity-20'}`} 
+            <div className={`fixed inset-0 z-0 overflow-hidden pointer-events-none transition-opacity duration-1000 ${isDarkMode ? 'opacity-100' : 'opacity-20'}`} 
                  style={{ background: isDarkMode ? 'radial-gradient(circle at 50% 30%, #0c1e35 0%, #020617 100%)' : 'radial-gradient(circle at 50% 50%, #f8fafc 0%, #e2e8f0 100%)' }}>
               
               {/* SVG Waves Container with Perspective */}
-              <div className="absolute inset-0 opacity-60">
-                <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <div className="absolute inset-0 w-full h-full opacity-60">
+                <svg className="w-full h-full" viewBox="0 0 1440 800" preserveAspectRatio="none" style={{ display: 'block', minWidth: '100vw' }}>
                   {[...Array(20)].map((_, i) => {
                     const progress = i / 20;
                     // Perspective: waves get closer and flatter as they move "back" (up)
-                    const baseY = 50 + Math.pow(progress, 1.5) * 50; 
-                    const amplitude = 1 + Math.pow(progress, 2) * 8; 
-                    const strokeWidth = 0.05 + progress * 0.2;
+                    const baseY = 400 + Math.pow(progress, 1.5) * 400; 
+                    const amplitude = 20 + Math.pow(progress, 2) * 120; 
+                    const strokeWidth = 0.5 + progress * 2.5;
                     const opacity = 0.05 + (1 - progress) * 0.4;
+                    
+                    // Generate more complex peaky paths with multiple segments
+                    const segments = 6;
+                    const segmentWidth = 1440 / segments;
+                    
+                    const generatePath = (ampMult: number) => {
+                      let d = `M-300,${baseY}`;
+                      for (let j = 0; j < segments; j++) {
+                        const x1 = j * segmentWidth + segmentWidth / 3;
+                        const x2 = j * segmentWidth + (segmentWidth * 2) / 3;
+                        const x3 = (j + 1) * segmentWidth;
+                        const y1 = baseY + (j % 2 === 0 ? -amplitude * ampMult : amplitude * ampMult);
+                        const y2 = baseY + (j % 2 === 0 ? -amplitude * ampMult : amplitude * ampMult);
+                        d += ` C${x1},${y1} ${x2},${y2} ${x3},${baseY}`;
+                      }
+                      d += ` L1740,${baseY}`;
+                      return d;
+                    };
                     
                     return (
                       <motion.path
                         key={`wave-${i}`}
-                        initial={{ d: `M-10,${baseY} L110,${baseY}` }}
+                        initial={{ d: generatePath(1), opacity: 0 }}
                         animate={{
                           d: [
-                            `M-10,${baseY} C${25 + (i % 4) * 5},${baseY - amplitude} ${50 - (i % 3) * 4},${baseY + amplitude} ${75 + (i % 5) * 3},${baseY - amplitude} 110,${baseY}`,
-                            `M-10,${baseY} C${25 - (i % 4) * 5},${baseY + amplitude} ${50 + (i % 3) * 4},${baseY - amplitude} ${75 - (i % 5) * 3},${baseY + amplitude} 110,${baseY}`,
-                            `M-10,${baseY} C${25 + (i % 4) * 5},${baseY - amplitude} ${50 - (i % 3) * 4},${baseY + amplitude} ${75 + (i % 5) * 3},${baseY - amplitude} 110,${baseY}`
-                          ]
+                            generatePath(1),
+                            generatePath(-1),
+                            generatePath(1)
+                          ],
+                          opacity: opacity
                         }}
                         transition={{
-                          duration: 10 + (i % 6) * 4,
-                          repeat: Infinity,
-                          ease: "easeInOut",
-                          delay: i * 0.25
+                          d: {
+                            duration: 15 + (i % 6) * 5,
+                            repeat: Infinity,
+                            ease: "easeInOut",
+                            delay: i * 0.3
+                          },
+                          opacity: {
+                            duration: 2,
+                            delay: i * 0.1
+                          }
                         }}
                         fill="none"
                         stroke={isDarkMode ? (i % 3 === 0 ? "#22d3ee" : i % 3 === 1 ? "#3b82f6" : "#1e40af") : "#6366f1"}
                         strokeWidth={strokeWidth}
                         strokeOpacity={opacity}
-                        style={{ filter: isDarkMode ? 'drop-shadow(0 0 12px rgba(34, 211, 238, 0.3))' : 'none' }}
+                        style={{ filter: isDarkMode ? 'drop-shadow(0 0 20px rgba(34, 211, 238, 0.4))' : 'none' }}
                       />
                     );
                   })}
@@ -441,7 +561,7 @@ export default function App() {
                   title="About" 
                   icon={User} 
                   color="bg-teal-500" 
-                  onClick={() => setActiveSection('about')} 
+                  onClick={() => setIsAboutModalOpen(true)} 
                 />
                 <TileCard 
                   title="Projects" 
@@ -472,6 +592,12 @@ export default function App() {
                 <a href="mailto:nitheshkokkada3@gmail.com" className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Email</a>
               </div>
             </footer>
+
+            <AnimatePresence>
+              {isAboutModalOpen && (
+                <AboutModal isOpen={isAboutModalOpen} onClose={() => setIsAboutModalOpen(false)} />
+              )}
+            </AnimatePresence>
           </div>
         );
     }
