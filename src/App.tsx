@@ -371,6 +371,7 @@ const AboutModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void 
 export default function App() {
   const [activeSection, setActiveSection] = useState<Section>(null);
   const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
+  const [formStatus, setFormStatus] = useState<'idle' | 'sending' | 'sent'>('idle');
   const [isDarkMode, setIsDarkMode] = useState(() => {
     // Check localStorage or system preference on initial state
     if (typeof window !== 'undefined') {
@@ -391,6 +392,16 @@ export default function App() {
       localStorage.setItem('theme', 'light');
     }
   }, [isDarkMode]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormStatus('sending');
+    // Simulate API call
+    setTimeout(() => {
+      setFormStatus('sent');
+      setTimeout(() => setFormStatus('idle'), 3000);
+    }, 1500);
+  };
 
   const renderSection = () => {
     switch (activeSection) {
@@ -538,21 +549,26 @@ export default function App() {
                 </div>
               </div>
               <div className="bg-white dark:bg-slate-800 p-10 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-700">
-                <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+                <form className="space-y-6" onSubmit={handleSubmit}>
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Name</label>
-                    <input type="text" className="w-full p-4 bg-slate-50 dark:bg-slate-700 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500/20 dark:text-white transition-all" placeholder="Your full name" />
+                    <input required type="text" className="w-full p-4 bg-slate-50 dark:bg-slate-700 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500/20 dark:text-white transition-all" placeholder="Your full name" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Email</label>
-                    <input type="email" className="w-full p-4 bg-slate-50 dark:bg-slate-700 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500/20 dark:text-white transition-all" placeholder="hello@example.com" />
+                    <input required type="email" className="w-full p-4 bg-slate-50 dark:bg-slate-700 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500/20 dark:text-white transition-all" placeholder="hello@example.com" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Message</label>
-                    <textarea rows={4} className="w-full p-4 bg-slate-50 dark:bg-slate-700 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500/20 dark:text-white transition-all" placeholder="Tell me about your project..." />
+                    <textarea required rows={4} className="w-full p-4 bg-slate-50 dark:bg-slate-700 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500/20 dark:text-white transition-all" placeholder="Tell me about your project..." />
                   </div>
-                  <button className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold uppercase tracking-widest hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200">
-                    Send Message
+                  <button 
+                    disabled={formStatus !== 'idle'}
+                    className={`w-full py-4 border-2 border-indigo-600 text-indigo-600 dark:text-indigo-400 rounded-2xl font-bold uppercase tracking-widest hover:bg-indigo-600 hover:text-white dark:hover:text-white transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed`}
+                  >
+                    {formStatus === 'idle' && 'Send Message'}
+                    {formStatus === 'sending' && 'Sending...'}
+                    {formStatus === 'sent' && 'Message Sent!'}
                   </button>
                 </form>
               </div>
